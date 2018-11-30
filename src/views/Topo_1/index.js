@@ -7,8 +7,8 @@ class Topo {
     type
   } = params) {
     this.params = {}
-    this.params.width = 785;
-    this.params.height = 384;
+    this.params.width = 1320;
+    this.params.height = 506;
     this._VM = VM,
       this._type = type
     //添加svg
@@ -71,7 +71,7 @@ class Topo {
     //正在拖动
     function dragged(d) {
       setXY(d)
-      
+
       //赋予现在节点位置  
       d.x = d3.event.x;
       d.y = d3.event.y;
@@ -112,11 +112,14 @@ class Topo {
       })
       .call(drags)
       .on("click", function (d) {
-        console.log(d)
-        _this.curr_id = d.id 
+        _this.curr_id = d.id
         _this._VM.curr_id = d.id
         setXY(d)
         if (_this.is_link == false) {
+          return
+        }
+        if (d.class == "rect") {
+          _this.linksNode = []
           return
         }
         if (_this.linksNode.length == 2) {
@@ -139,54 +142,99 @@ class Topo {
 
         }
       }).on("dblclick", function (d) {
-        var val = prompt("输入当前网段")
-        d.ip = val;
-      })
-    _node.append("image").attr("xlink:href", function (d) {
-      return "http://ptt.stonerao.com/images/" + d.type + ".png"
-    }).attr("width", function (d) {
-      if (_this._type == 2) {
-        if (d.type == 6) {
-          return 124
-        } else if (d.type == 5) {
-          return 20
-        }else if (d.type == 1) {
-          return 20
+        var val = prompt("输入当前网段",d.ip||"")
+        if(val){ 
+          d.ip = val;
         }
-
-      }else if(_this.type==3){
-        if(d.type==22){
-          return 225
-        } 
-      }
-    })
-    _node.append("text").text(function (d) {
-        let box = d3.select(".g_node" + d.id).node().getBBox()
-        return d.value
-      }).attr("x", function (d) {
-        let box = d3.select(".g_node" + d.id).node().getBBox()
-        return box.width / 2
       })
-      .attr("y", function (d) {
-        let box = d3.select(".g_node" + d.id).node().getBBox()
-        return d.bottom == true ? box.height - 16 : d.top == true ? 16 : box.height / 2
-      }).attr("text-anchor", "middle")
+    //添加
+    _node.each(function (d) { 
+      switch (d.class) {
+        case "rect":
+          let gs = d3.select(this)
+          let box = d3.select(".g_node" + d.id).node().getBBox()
+          // gs.append("text").text(d.text)
+          //   .attr("dominant-baseline", "middle")
+          //   .attr("text-anchor", "middle")
+          //   .attr("x", function () {
+          //     return d.width/2
+          //   }).attr("y", function () {
+          //     return  d.height/2
+          //   }).attr("fill", "#2e425a")
+          //   .attr("font-size", "34px")
+          //   .attr("font-weight", "bold")
+          gs.append("rect").attr("fill", "rgba(135,216,251,0.1)")
+            .attr("width", d.width)
+            .attr("height", d.height)
+            .attr("stroke", "#568ca7")
+            .attr("stroke-width", 1)
+            .attr("stroke-dasharray", 2) 
+          break;
+        case "image":
+          d3.select(this).append("image").attr("xlink:href", function (d) {
+            return "http://ptt.stonerao.com/img/" + d.type + ".png"
+          }).attr("height", function (d) {
+            if (d.type == 10) {
+              return 30
+            } else if (d.type == 2) {
+              return 16
+            } else if (d.type == 1) {
+              return 28
+            } else if (d.type == 5) {
+              return 28
+            } else {
+              return 30
+            }
+          })
+          break;
+        default:
+          ;
+      }
+      return
+      d3.select(this).append("image").attr("xlink:href", function (d) {
+        return "http://ptt.stonerao.com/img/" + d.type + ".png"
+      }).attr("width", function (d) {
+        if (_this._type == 2) {
+          if (d.type == 6) {
+            return 124
+          } else if (d.type == 5) {
+            return 20
+          } else if (d.type == 1) {
+            return 20
+          }
+
+        } else if (_this.type == 3) {
+          if (d.type == 22) {
+            return 225
+          }
+        }
+      })
+    })
+    // //给节点添加字体
+    // _node.append("text").text(function (d) {
+    //     let box = d3.select(".g_node" + d.id).node().getBBox()
+    //     return d.value
+    //   }).attr("x", function (d) {
+    //     let box = d3.select(".g_node" + d.id).node().getBBox()
+    //     return box.width / 2
+    //   })
+    //   .attr("y", function (d) {
+    //     let box = d3.select(".g_node" + d.id).node().getBBox()
+    //     return d.bottom == true ? box.height - 16 : d.top == true ? 16 : box.height / 2
+    //   }).attr("text-anchor", "middle")
 
     /* .append("rect")
     .attr("fill", (d, i) => color(i))
     .attr("width", 50)
     .attr("height", 50) */
-
-
-   
-    async function linkUpdata() { 
+    async function linkUpdata() {
       //根据数组中更新线条
       _this.links.html("")
       _this._link = _this.links.selectAll("line")
         .data(links)
       _this._link.enter().append("line").attr("x1", function (d) {
         let n = nodes.filter(node => node.id == d.source)[0]
-        let box = d3.select(".g_node" + n.id).node().getBBox()  
+        let box = d3.select(".g_node" + n.id).node().getBBox()
         return n.x + box.width / 2
       }).attr("y1", d => {
         let n = nodes.filter(node => node.id == d.source)[0]
@@ -200,13 +248,16 @@ class Topo {
         let n = nodes.filter(node => node.id == d.target)[0]
         let box = d3.select(".g_node" + n.id).node().getBBox()
         return n.y + box.height / 2
-      }).attr("class", "line-store").on("click", function (d) {   
+      }).attr("class", "line-store").on("click", function (d) {
         d.active = !d.active
         d3.select(this).classed("lineActive", d.active)
-      }).classed("lineActive",d=>d.active)
-    } 
+      }).classed("lineActive", d => d.active)
+    }
     linkUpdata()
-
+    _this._VM.params = {
+      nodes: nodes,
+      links: links
+    }
   }
   random() {
     //生成随机坐标
@@ -216,9 +267,9 @@ class Topo {
     }
   }
   export () {}
-  deletes() { 
+  deletes() {
     this._VM.params.nodes = this._VM.params.nodes.filter(x => x.id != this.curr_id)
-    this._VM.params.links = this._VM.params.links.filter(x => x.target != this.curr_id && x.source != this.curr_id) 
+    this._VM.params.links = this._VM.params.links.filter(x => x.target != this.curr_id && x.source != this.curr_id)
     this.render(this._VM.params)
   }
   addlink() {
@@ -227,7 +278,9 @@ class Topo {
   overLINK() {
     this.is_link = false
   }
+  addRect() {
 
+  }
 
 }
 export default Topo;

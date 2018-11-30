@@ -14,7 +14,7 @@ export default {
     };
   },
   mounted() {
-    this.Grpah = new Grpah();
+ /*    this.Grpah = new Grpah(); */
    /*  this.Grpah.line({
       id: "#box",
       data: [4, 2, 3, 2, 5, 6, 1],
@@ -25,7 +25,7 @@ export default {
       }
     }); */
     //
-    var forceData = {
+   /*  var forceData = {
       links: [
         {
           source: 1,
@@ -44,12 +44,11 @@ export default {
       ]
     };
     let graph = this.Grpah.force({
-      id: "#force",
-      
+      id: "#force", 
       width: 1000,
       height: 500
     });
-    graph.restar(forceData)
+    graph.restar(forceData) */
     
   }
 };

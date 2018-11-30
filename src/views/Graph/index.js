@@ -161,8 +161,8 @@ class Extend_Graph extends Graph {
     link = link_g.merge(link);
     //动力 ticks事件
     function ticked() {
-      all_link
-        .attr("x1", function (d) {
+      all_link.attr("x1", function (d) {
+        console.log(d)
           return d.source.x;
         })
         .attr("y1", function (d) {
